@@ -1,0 +1,125 @@
+class ATM:
+    def __init__(self):
+        self.name = None
+        self.mobile = None
+        self.pin = None
+        self.balance = 0
+        self.transactions = []
+
+    def activate_card(self):
+        print("==== ATM Card Activation ====")
+        self.name = input("Enter your full name: ")
+        while True:
+            self.mobile = input("Enter 10-digit mobile number: ")
+            if len(self.mobile) == 10 and self.mobile.isdigit():
+                break
+            else:
+                print("Invalid mobile number! Try again.")
+        
+        while True:
+            pin1 = input("Create a 4-digit PIN: ")
+            pin2 = input("Re-enter PIN: ")
+            if pin1 == pin2 and len(pin1) == 4 and pin1.isdigit():
+                self.pin = pin1
+                break
+            else:
+                print("PIN mismatch or invalid! Try again.")
+        
+        while True:
+            deposit = float(input("Enter initial deposit (min ₹1000) : "))
+            if deposit >= 1000:
+                self.balance += deposit
+                self.transactions.append(f"Initial Deposit :  {deposit}")
+                print("Card activated successfully!")
+                break
+            else:
+                print("Minimum ₹1000 required to activate.")
+
+    def verify_pin(self):
+        entered_pin = input("Enter your 4-digit PIN : ")
+        if entered_pin == self.pin:
+            return True
+        else:
+            print("Incorrect PIN!")
+            return False
+
+    def change_pin(self):
+        if self.verify_pin():
+            new_pin = input("Enter new 4-digit PIN : ")
+            confirm_pin = input("Re-enter new PIN : ")
+            if new_pin == confirm_pin and len(new_pin) == 4 and new_pin.isdigit():
+                self.pin = new_pin
+                print("PIN changed successfully!")
+            else:
+                print("PIN mismatch or invalid!")
+
+    def deposit(self):
+        if self.verify_pin():
+            amount = float(input("Enter amount to deposit : "))
+            self.balance += amount
+            self.transactions.append(f"Deposited :  {amount}")
+            print(f" {amount} deposited successfully.")
+
+    def withdraw(self):
+        if self.verify_pin():
+            amount = float(input("Enter amount to withdraw : "))
+            charge = self.calculate_charge(amount)
+            total = amount + charge
+
+            if total > self.balance:
+                print("Insufficient balance!")
+            else:
+                self.balance -= total
+                self.transactions.append(f"Withdrawn :  {amount} (Charge :  {charge})")
+                print(f" {amount} withdrawn successfully. Transaction charge  {charge} applied.")
+
+    def calculate_charge(self, amount):
+        if amount <= 1000:
+            return 0
+        elif amount <= 20000:
+            return 100
+        elif amount <= 100000:
+            return 1000
+        else:
+            return 2000
+
+    def check_balance(self):
+        if self.verify_pin():
+            print(f"Available Balance : {self.balance}")
+
+    def view_transactions(self):
+        if self.verify_pin():
+            print("\n==== Last 10 Transactions ====")
+            for t in self.transactions[-10:]:
+                print(t)
+
+    def main_menu(self):
+        while True:
+            print("\n==== ATM Main Menu ====")
+            print("1. Change PIN")
+            print("2. Deposit Money")
+            print("3. Withdraw Money")
+            print("4. Check Balance")
+            print("5. View Last 10 Transactions")
+            print("6. Exit")
+
+            choice = input("Enter your choice: ")
+            if choice == '1':
+                self.change_pin()
+            elif choice == '2':
+                self.deposit()
+            elif choice == '3':
+                self.withdraw()
+            elif choice == '4':
+                self.check_balance()
+            elif choice == '5':
+                self.view_transactions()
+            elif choice == '6':
+                print("Thank you for using the ATM !")
+                break
+            else:
+                print("Invalid option! Try again ")
+
+a = ATM()
+a.activate_card()
+a.main_menu()
