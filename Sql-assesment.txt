@@ -1,0 +1,27 @@
+Task 1
+List all countries and customers related to those countries.
+Display country name in English, city name and customer name.
+Return even countries without cities and customers.
+
+SELECT country.country_name_eng,
+city.city_name,
+customer.customer_name
+FROM country
+LEFT JOIN city
+ON country.id = city.country_id
+LEFT JOIN customer
+ON city.id = customer.city_id;
+
+Task 2
+Return all countries that have cities.
+For those cities return all customers.
+Return even cities that do not have customers.
+
+SELECT country.country_name_eng,
+city.city_name,
+customer.customer_name
+FROM country
+INNER JOIN city
+ON country.id = city.country_id
+LEFT JOIN customer
+ON city.id = customer.city_id;
