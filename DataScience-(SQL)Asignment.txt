@@ -1,0 +1,277 @@
+1. Find customers who are from 'New York' OR whose grade is not greater than 100.
+
+SELECT customer_id, cust_name, city, grade, salesman_id
+FROM customer
+WHERE city = 'New York'
+OR grade <= 100;
+
+
+2. Find customers in 'New York' city whose grade is above 100.
+
+SELECT customer_id, cust_name, city, grade, salesman_id
+FROM customer
+WHERE city = 'New York'
+AND grade > 100;
+
+
+3. Display order number, purchase amount, achieved % and unachieved % 
+for orders exceeding 50% of the target value 6000.
+
+SELECT ord_no,
+       purch_amt,
+       (purch_amt/6000)*100 AS achieved_percent,
+       (100 - (purch_amt/6000)*100) AS unachieved_percent
+FROM orders
+WHERE (purch_amt/6000)*100 > 50;
+
+
+4. Calculate total purchase amount of all orders.
+
+SELECT SUM(purch_amt) AS total_purchase_amount
+FROM orders;
+
+
+5. Find highest purchase amount ordered by each customer.
+
+SELECT customer_id,
+       MAX(purch_amt) AS max_purchase_amount
+FROM orders
+GROUP BY customer_id;
+
+
+6. Calculate average product price.
+
+SELECT AVG(PRO_PRICE) AS average_product_price
+FROM item_mast;
+
+
+7. Find employees whose department is located at Toronto.
+
+SELECT e.first_name, e.last_name, e.employee_id, e.job_id
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+JOIN locations l ON d.location_id = l.location_id
+WHERE l.city = 'Toronto';
+
+
+8. Find employees whose salary is lower than employees whose job title is 'MK_MAN'.
+
+SELECT employee_id, first_name, last_name, job_id
+FROM employees
+WHERE salary < (
+      SELECT salary
+      FROM employees
+      WHERE job_id = 'MK_MAN'
+)
+AND job_id <> 'MK_MAN';
+
+
+9. Find employees who work in department 80 or 40.
+
+SELECT e.first_name, e.last_name, d.department_id, d.department_name
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+WHERE d.department_id IN (80,40);
+
+
+10. Calculate average salary and number of employees receiving commission in each department.
+
+SELECT d.department_name,
+       AVG(e.salary) AS average_salary,
+       COUNT(e.commission_pct) AS employees_with_commission
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+GROUP BY d.department_name;
+
+11. Find employees who have the same designation as employee with ID 169.
+
+SELECT first_name, last_name, department_id, job_id
+FROM employees
+WHERE job_id = (
+      SELECT job_id
+      FROM employees
+      WHERE employee_id = 169
+);
+
+
+12. Find employees who earn more than the average salary.
+
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE salary > (
+      SELECT AVG(salary)
+      FROM employees
+);
+
+
+13. Find employees who work in the Finance department.
+
+SELECT department_id, first_name, job_id
+FROM employees
+WHERE department_id = (
+      SELECT department_id
+      FROM departments
+      WHERE department_name = 'Finance'
+);
+
+14. Find employees who earn less than employee with ID 182.
+
+SELECT first_name, last_name, salary
+FROM employees
+WHERE salary < (
+      SELECT salary
+      FROM employees
+      WHERE employee_id = 182
+);
+
+
+15. Stored procedure to count employees in each department.
+
+DELIMITER $$
+
+CREATE PROCEDURE CountEmployeesByDept()
+BEGIN
+    SELECT department_id, COUNT(*) AS total_employees
+    FROM employees
+    GROUP BY department_id;
+END $$
+
+DELIMITER ;
+
+
+16. Stored procedure to add a new employee.
+
+DELIMITER $$
+
+CREATE PROCEDURE AddNewEmployee(
+    IN emp_id INT,
+    IN fname VARCHAR(20),
+    IN lname VARCHAR(25),
+    IN job VARCHAR(10),
+    IN sal DECIMAL(8,2),
+    IN dept INT
+)
+BEGIN
+    INSERT INTO employees(employee_id, first_name, last_name, job_id, salary, department_id, hire_date)
+    VALUES(emp_id, fname, lname, job, sal, dept, CURDATE());
+END $$
+
+DELIMITER ;
+
+
+17. Stored procedure to delete employees of a specific department.
+
+DELIMITER $$
+
+CREATE PROCEDURE DeleteEmployeesByDept(
+    IN dept_id INT
+)
+BEGIN
+    DELETE FROM employees
+    WHERE department_id = dept_id;
+END $$
+
+DELIMITER ;
+
+
+18. Stored procedure to get highest paid employee in each department.
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTopPaidEmployees()
+BEGIN
+    SELECT department_id, employee_id, first_name, last_name, salary
+    FROM employees e
+    WHERE salary = (
+          SELECT MAX(salary)
+          FROM employees
+          WHERE department_id = e.department_id
+    );
+END $$
+
+DELIMITER ;
+
+
+19. Stored procedure to promote an employee (increase salary and change job role).
+
+DELIMITER $$
+
+CREATE PROCEDURE PromoteEmployee(
+    IN emp_id INT,
+    IN new_job VARCHAR(10),
+    IN salary_increase DECIMAL(8,2)
+)
+BEGIN
+    UPDATE employees
+    SET job_id = new_job,
+        salary = salary + salary_increase
+    WHERE employee_id = emp_id;
+END $$
+
+DELIMITER ;
+
+
+20. Stored procedure to assign a new manager to all employees in a department.
+
+DELIMITER $$
+
+CREATE PROCEDURE AssignManagerToDepartment(
+    IN dept_id INT,
+    IN manager INT
+)
+BEGIN
+    UPDATE employees
+    SET manager_id = manager
+    WHERE department_id = dept_id;
+END $$
+
+DELIMITER ;
+
+-> NoSQL queries 
+1. Retrieve all employee records :-
+
+db.employees.find()
+
+
+2. Find employees who work in the IT department
+
+db.employees.find({ department: "IT" })
+
+
+3. Find employees who have a salary greater than 70,000
+
+db.employees.find({ salary: { $gt: 70000 } })
+
+
+4. Find employees who joined after 2018
+
+db.employees.find({ joining_date: { $gt: "2018-12-31" } })
+
+
+5. Find employees between the ages of 30 and 40
+
+db.employees.find({
+  age: { $gte: 30, $lte: 40 }
+})
+
+
+6. Increase salary of employees in Finance department by 5%
+
+db.employees.updateMany(
+  { department: "Finance" },
+  { $mul: { salary: 1.05 } }
+)
+
+
+7. Delete employees who joined before 2010
+
+db.employees.deleteMany({
+  joining_date: { $lt: "2010-01-01" }
+})
+
+
+8. Find the highest-paid employee
+
+db.employees.find()
+.sort({ salary: -1 })
+.limit(1)
